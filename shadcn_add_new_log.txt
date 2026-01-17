@@ -1,0 +1,12 @@
+- Checking registry.
+
+
+Something went wrong. Please check the error below for more details.
+If the problem persists, please open an issue on GitHub.
+
+Message:
+The item at https://ui.shadcn.com/r/styles/default/.json was not found. It may not exist at the registry.
+
+Suggestion:
+Check if the item name is correct and the registry URL is accessible.
+
