@@ -18,8 +18,7 @@ export default auth((req) => {
         if (!isLoggedIn) {
             return NextResponse.redirect(new URL("/login", req.nextUrl));
         }
-        // @ts-ignore
-        if (req.auth.user?.role !== "ADMIN" && req.auth.user?.role !== "SUPER_ADMIN") {
+        if (req.auth?.user?.role !== "ADMIN" && req.auth?.user?.role !== "SUPER_ADMIN") {
             return NextResponse.redirect(new URL("/", req.nextUrl));
         }
         return NextResponse.next();

@@ -84,7 +84,7 @@ export default function CheckoutPage() {
                     productId: item.productId,
                     variantId: item.variantId,
                     name: item.product.name,
-                    sku: item.product.sku || '',
+                    sku: (item.product as any).sku || '',
                     size: item.variant?.size,
                     color: item.variant?.color,
                     image: item.product.image,
@@ -154,7 +154,7 @@ export default function CheckoutPage() {
                         contact: selectedAddress.phone,
                     },
                     theme: {
-                        color: '#667eea',
+                        color: '#8B1A4A',
                     },
                 };
 

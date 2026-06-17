@@ -25,10 +25,10 @@ export const addressSchema = z.object({
     city: z.string().min(2, 'City is required').max(100),
     state: z.string().min(2, 'State is required').max(100),
     pincode: z.string().regex(/^\d{6}$/, 'Invalid pincode (must be 6 digits)'),
-    country: z.string().default('India'),
+    country: z.string(),
     landmark: z.string().max(200).optional().or(z.literal('')),
-    addressType: z.enum(['HOME', 'OFFICE', 'OTHER']).default('HOME'),
-    isDefault: z.boolean().default(false),
+    addressType: z.enum(['HOME', 'OFFICE', 'OTHER']),
+    isDefault: z.boolean(),
 });
 
 export type AddressFormData = z.infer<typeof addressSchema>;

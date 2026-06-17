@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ProductsTable } from "@/components/admin/ProductsTable";
@@ -71,13 +71,22 @@ export default async function ProductsPage({
                         Manage your product catalog
                     </p>
                 </div>
-                <Link href="/admin/products/new">
-                    <Button>
-                        <Plus className="h-4 w-4 mr-2" />
-                        Add Product
-                    </Button>
-                </Link>
+                <div className="flex gap-3">
+                    <Link href="/admin/products/import">
+                        <Button variant="outline">
+                            <Upload className="h-4 w-4 mr-2" />
+                            Import CSV
+                        </Button>
+                    </Link>
+                    <Link href="/admin/products/new">
+                        <Button>
+                            <Plus className="h-4 w-4 mr-2" />
+                            Add Product
+                        </Button>
+                    </Link>
+                </div>
             </div>
+
 
             {/* Filters */}
             <div className="flex gap-4">

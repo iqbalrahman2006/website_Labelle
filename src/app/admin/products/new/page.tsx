@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { ProductForm } from "@/components/admin/ProductForm";
+import { NewProductForm } from "@/components/admin/NewProductForm";
 
 async function getCategories() {
     try {
@@ -18,5 +18,6 @@ async function getCategories() {
 export default async function NewProductPage() {
     const categories = await getCategories();
 
-    return <ProductForm categories={categories} />;
+    return <NewProductForm categories={categories} />;
 }
+

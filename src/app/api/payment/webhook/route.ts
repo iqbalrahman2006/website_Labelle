@@ -59,7 +59,7 @@ async function handlePaymentCaptured(payment: any) {
     try {
         // Update order payment status
         await prisma.order.updateMany({
-            where: { paymentId: payment.id },
+            where: { razorpayPaymentId: payment.id },
             data: {
                 paymentStatus: 'PAID',
                 status: 'CONFIRMED',
@@ -76,7 +76,7 @@ async function handlePaymentFailed(payment: any) {
     try {
         // Update order payment status
         await prisma.order.updateMany({
-            where: { paymentId: payment.id },
+            where: { razorpayPaymentId: payment.id },
             data: {
                 paymentStatus: 'FAILED',
                 status: 'CANCELLED',

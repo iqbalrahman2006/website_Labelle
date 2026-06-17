@@ -136,7 +136,35 @@ async function fetchBestsellers(): Promise<Product[]> {
     return data.products;
 }
 
+export interface CategoryType {
+    id: string;
+    name: string;
+    slug: string;
+    description?: string | null;
+    image?: string | null;
+}
+
+// Fetch categories
+async function fetchCategories(): Promise<CategoryType[]> {
+    const response = await fetch('/api/categories');
+    if (!response.ok) {
+        throw new Error('Failed to fetch categories');
+    }
+    return response.json();
+}
+
 // Hooks
+
+/**
+ * Hook to fetch categories
+ */
+export function useCategories(): UseQueryResult<CategoryType[]> {
+    return useQuery({
+        queryKey: ['categories'],
+        queryFn: fetchCategories,
+        staleTime: 10 * 60 * 1000, // 10 minutes
+    });
+}
 
 /**
  * Hook to fetch products with filters

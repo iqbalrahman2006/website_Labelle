@@ -36,7 +36,7 @@ interface CartStore {
     subtotal: () => number;
 }
 
-export const useCart = create<CartStore>()(
+export const useCartStore = create<CartStore>()(
     persist(
         (set, get) => ({
             items: [],
@@ -227,3 +227,21 @@ export const useCart = create<CartStore>()(
         }
     )
 );
+
+import { useState, useEffect } from 'react';
+
+export const useCart = () => {
+    const store = useCartStore();
+    const [isMounted, setIsMounted] = useState(false);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
+    return {
+        ...store,
+        items: isMounted ? store.items : [],
+        itemCount: () => (isMounted ? store.itemCount() : 0),
+        subtotal: () => (isMounted ? store.subtotal() : 0),
+    };
+};

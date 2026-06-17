@@ -46,7 +46,7 @@ export default function OrderConfirmationPage() {
             <div className="container py-16 text-center">
                 <h1 className="text-2xl font-bold mb-4">Order Not Found</h1>
                 <p className="text-muted-foreground mb-8">
-                    We couldn't find the order you're looking for.
+                    We couldn&apos;t find the order you&apos;re looking for.
                 </p>
                 <Button asChild>
                     <Link href="/account">View My Orders</Link>
@@ -124,7 +124,7 @@ export default function OrderConfirmationPage() {
                 {/* What's Next */}
                 <Card className="mb-6">
                     <CardHeader>
-                        <h2 className="text-xl font-semibold">What's Next?</h2>
+                        <h2 className="text-xl font-semibold">What&apos;s Next?</h2>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="flex items-start gap-3">
@@ -134,7 +134,7 @@ export default function OrderConfirmationPage() {
                             <div>
                                 <p className="font-medium mb-1">Order Confirmation Email</p>
                                 <p className="text-sm text-muted-foreground">
-                                    We've sent a confirmation email with your order details
+                                    We&apos;ve sent a confirmation email with your order details
                                 </p>
                             </div>
                         </div>
@@ -145,7 +145,7 @@ export default function OrderConfirmationPage() {
                             <div>
                                 <p className="font-medium mb-1">Order Processing</p>
                                 <p className="text-sm text-muted-foreground">
-                                    We're preparing your items for shipment
+                                    We&apos;re preparing your items for shipment
                                 </p>
                             </div>
                         </div>
@@ -156,7 +156,7 @@ export default function OrderConfirmationPage() {
                             <div>
                                 <p className="font-medium mb-1">Shipping Notification</p>
                                 <p className="text-sm text-muted-foreground">
-                                    You'll receive tracking details once your order ships
+                                    You&apos;ll receive tracking details once your order ships
                                 </p>
                             </div>
                         </div>

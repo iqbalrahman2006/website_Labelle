@@ -15,7 +15,7 @@ export function EmptyCart() {
             {/* Message */}
             <h2 className="mb-2 text-2xl font-bold">Your cart is empty</h2>
             <p className="mb-8 text-muted-foreground max-w-md">
-                Looks like you haven't added anything to your cart yet. Start shopping to fill it up!
+                Looks like you haven&apos;t added anything to your cart yet. Start shopping to fill it up!
             </p>
 
             {/* CTA Buttons */}

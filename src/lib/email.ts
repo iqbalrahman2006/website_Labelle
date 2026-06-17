@@ -1,8 +1,5 @@
 import { Resend } from 'resend';
 
-// Initialize Resend
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 /**
  * Send order confirmation email
  */
@@ -24,7 +21,13 @@ export async function sendOrderConfirmationEmail(
         shippingAddress: any;
     }
 ) {
+    if (!process.env.RESEND_API_KEY) {
+        console.warn('[Email] RESEND_API_KEY not configured. Order confirmation email skipped for:', to);
+        return { success: true, skipped: true };
+    }
+
     try {
+        const resend = new Resend(process.env.RESEND_API_KEY);
         const { data, error } = await resend.emails.send({
             from: process.env.EMAIL_FROM || 'orders@labelle.com',
             to,
@@ -60,7 +63,13 @@ export async function sendShippingNotificationEmail(
         estimatedDelivery?: string;
     }
 ) {
+    if (!process.env.RESEND_API_KEY) {
+        console.warn('[Email] RESEND_API_KEY not configured. Shipping notification email skipped for:', to);
+        return { success: true, skipped: true };
+    }
+
     try {
+        const resend = new Resend(process.env.RESEND_API_KEY);
         const { data, error } = await resend.emails.send({
             from: process.env.EMAIL_FROM || 'orders@labelle.com',
             to,

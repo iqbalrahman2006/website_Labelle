@@ -83,11 +83,11 @@ export default function ProductPage({ params }: ProductPageProps) {
             </div>
 
             {/* Tabs Section */}
-            <Tabs defaultValue="reviews" className="mb-16">
-                <TabsList className="w-full justify-start">
-                    <TabsTrigger value="reviews">Reviews ({product.reviewCount})</TabsTrigger>
-                    <TabsTrigger value="description">Description</TabsTrigger>
-                    <TabsTrigger value="details">Product Details</TabsTrigger>
+            <Tabs defaultValue="description" className="mb-16">
+                <TabsList className="w-full justify-start border-b rounded-none bg-transparent h-auto p-0">
+                    <TabsTrigger value="description" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-6 py-3 font-semibold text-base">Description</TabsTrigger>
+                    <TabsTrigger value="details" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-6 py-3 font-semibold text-base">Product Details</TabsTrigger>
+                    <TabsTrigger value="reviews" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-6 py-3 font-semibold text-base">Reviews ({product.reviewCount})</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="reviews" className="mt-8">

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
+import { auth } from '@/lib/auth';
 import { verifyRazorpaySignature } from '@/lib/razorpay';
 import { sendOrderConfirmationEmail } from '@/lib/email';
 import { formatOrderForEmail } from '@/lib/utils/order-utils';
@@ -7,7 +7,7 @@ import { prisma } from '@/lib/prisma';
 
 export async function POST(request: NextRequest) {
     try {
-        const session = await getServerSession();
+        const session = await auth();
 
         if (!session || !session.user?.id) {
             return NextResponse.json(
@@ -46,7 +46,9 @@ export async function POST(request: NextRequest) {
                 status: 'CONFIRMED',
                 paymentStatus: 'PAID',
                 paymentMethod: 'RAZORPAY',
-                paymentId: razorpay_payment_id,
+                razorpayOrderId: razorpay_order_id,
+                razorpayPaymentId: razorpay_payment_id,
+                razorpaySignature: razorpay_signature,
                 subtotal: orderData.subtotal,
                 shipping: orderData.shipping,
                 tax: orderData.tax,

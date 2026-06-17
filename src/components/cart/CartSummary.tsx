@@ -66,7 +66,7 @@ export function CartSummary({
                 <div className="p-4 bg-green-50 rounded-lg">
                     <p className="text-sm font-medium text-green-900 flex items-center gap-2">
                         <Badge className="bg-green-500">FREE</Badge>
-                        You've qualified for free shipping!
+                        You&apos;ve qualified for free shipping!
                     </p>
                 </div>
             )}

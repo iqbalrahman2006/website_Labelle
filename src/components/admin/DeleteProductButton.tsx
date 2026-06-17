@@ -66,7 +66,7 @@ export function DeleteProductButton({
                     <DialogHeader>
                         <DialogTitle>Delete Product</DialogTitle>
                         <DialogDescription>
-                            Are you sure you want to delete "{productName}"? This
+                            Are you sure you want to delete &quot;{productName}&quot;? This
                             action cannot be undone.
                         </DialogDescription>
                     </DialogHeader>

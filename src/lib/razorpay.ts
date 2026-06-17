@@ -1,22 +1,30 @@
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
 
-// Initialize Razorpay instance
-export const razorpay = new Razorpay({
-    key_id: process.env.RAZORPAY_KEY_ID!,
-    key_secret: process.env.RAZORPAY_KEY_SECRET!,
-});
+/**
+ * Get Razorpay instance (guarded for local dev)
+ */
+export function getRazorpayInstance() {
+    if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+        throw new Error('[Payment] Razorpay credentials not configured');
+    }
+    return new Razorpay({
+        key_id: process.env.RAZORPAY_KEY_ID,
+        key_secret: process.env.RAZORPAY_KEY_SECRET,
+    });
+}
 
 /**
  * Create a Razorpay order
  */
 export async function createRazorpayOrder(amount: number, receipt: string) {
     try {
+        const razorpay = getRazorpayInstance();
         const order = await razorpay.orders.create({
             amount: amount * 100, // Convert to paise
             currency: 'INR',
             receipt,
-            payment_capture: 1, // Auto capture payment
+            payment_capture: true, // Auto capture payment
         });
 
         return {
@@ -41,9 +49,14 @@ export function verifyRazorpaySignature(
     signature: string
 ): boolean {
     try {
+        if (!process.env.RAZORPAY_KEY_SECRET) {
+            console.warn('[Payment] RAZORPAY_KEY_SECRET not configured. Signature verification failed.');
+            return false;
+        }
+        
         const text = `${orderId}|${paymentId}`;
         const generatedSignature = crypto
-            .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET!)
+            .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
             .update(text)
             .digest('hex');
 

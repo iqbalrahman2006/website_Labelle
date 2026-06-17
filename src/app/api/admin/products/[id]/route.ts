@@ -8,7 +8,6 @@ async function checkAdmin() {
     const session = await auth();
     if (!session?.user) return false;
 
-    // @ts-ignore - role is added via session callback
     if (session.user.role !== "ADMIN" && session.user.role !== "SUPER_ADMIN") {
         return false;
     }
@@ -22,7 +21,7 @@ export async function GET(
 ) {
     const isAdmin = await checkAdmin();
     if (!isAdmin) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     try {
@@ -60,7 +59,7 @@ export async function PATCH(
 ) {
     const isAdmin = await checkAdmin();
     if (!isAdmin) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     try {
@@ -123,7 +122,7 @@ export async function DELETE(
 ) {
     const isAdmin = await checkAdmin();
     if (!isAdmin) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     try {
