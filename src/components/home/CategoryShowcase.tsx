@@ -9,13 +9,13 @@ const CATEGORIES = [
         name: "Sarees",
         slug: "sarees",
         description: "Timeless 6-yard drapes in silk and organza",
-        image: "https://images.unsplash.com/photo-1610030469668-93535c17b6b3?auto=format&fit=crop&w=600&q=80",
+        image: "https://images.unsplash.com/photo-1583391265517-35bbdba01229?auto=format&fit=crop&w=600&q=80",
     },
     {
         name: "Lehengas",
         slug: "lehengas",
         description: "Stunning bridal and bridesmaid designer lehengas",
-        image: "https://images.unsplash.com/photo-1610030470298-4057f794cac6?auto=format&fit=crop&w=600&q=80",
+        image: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=600&q=80",
     },
     {
         name: "Anarkali Suits",
