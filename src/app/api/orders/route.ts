@@ -52,46 +52,64 @@ export async function POST(req: Request) {
         // Use provided order number or generate one
         const finalOrderNumber = orderNumber || `LB-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
-        const order = await prisma.order.create({
-            data: {
-                orderNumber: finalOrderNumber,
-                userId: session.user.id,
-                status: 'CONFIRMED',
-                paymentStatus: paymentMethod === 'COD' ? 'PENDING' : 'PAID',
-                paymentMethod,
-                subtotal,
-                shipping,
-                tax,
-                discount,
-                total,
-                customerName,
-                customerEmail,
-                customerPhone,
-                shippingAddress,
-                billingAddress: billingAddress || shippingAddress,
-                items: {
-                    create: items.map((item: any) => ({
-                        productId: item.productId,
-                        variantId: item.variantId,
-                        name: item.name,
-                        sku: item.sku,
-                        price: item.price,
-                        quantity: item.quantity,
-                        total: item.total,
-                        image: item.image,
-                        size: item.size,
-                        color: item.color,
-                    })),
+        const order = await prisma.$transaction(async (tx) => {
+            const newOrder = await tx.order.create({
+                data: {
+                    orderNumber: finalOrderNumber,
+                    userId: session.user.id,
+                    status: 'CONFIRMED',
+                    paymentStatus: paymentMethod === 'COD' ? 'PENDING' : 'PAID',
+                    paymentMethod,
+                    subtotal,
+                    shipping,
+                    tax,
+                    discount,
+                    total,
+                    customerName,
+                    customerEmail,
+                    customerPhone,
+                    shippingAddress,
+                    billingAddress: billingAddress || shippingAddress,
+                    items: {
+                        create: items.map((item: any) => ({
+                            productId: item.productId,
+                            variantId: item.variantId,
+                            name: item.name,
+                            sku: item.sku,
+                            price: item.price,
+                            quantity: item.quantity,
+                            total: item.total,
+                            image: item.image,
+                            size: item.size,
+                            color: item.color,
+                        })),
+                    },
                 },
-            },
-            include: {
-                items: true,
-            },
-        });
+                include: {
+                    items: true,
+                },
+            });
 
-        // Clear cart after order creation
-        await prisma.cartItem.deleteMany({
-            where: { userId: session.user.id },
+            // Decrement stock levels for each purchased variant
+            for (const item of items) {
+                if (item.variantId) {
+                    await tx.productVariant.update({
+                        where: { id: item.variantId },
+                        data: {
+                            inventory: {
+                                decrement: item.quantity,
+                            },
+                        },
+                    });
+                }
+            }
+
+            // Clear cart after order creation
+            await tx.cartItem.deleteMany({
+                where: { userId: session.user.id },
+            });
+
+            return newOrder;
         });
 
         // Send confirmation email

@@ -13,6 +13,8 @@ import {
     Tag,
     Settings,
     LogOut,
+    Boxes,
+    UserCog,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
@@ -44,9 +46,19 @@ const navItems = [
         icon: ShoppingCart,
     },
     {
+        label: "Inventory",
+        href: "/admin/inventory",
+        icon: Boxes,
+    },
+    {
         label: "Customers",
         href: "/admin/customers",
         icon: Users,
+    },
+    {
+        label: "Users",
+        href: "/admin/users",
+        icon: UserCog,
     },
     {
         label: "Categories",

@@ -12,6 +12,7 @@ interface Order {
     id: string;
     orderNumber: string;
     customerName: string;
+    customerPhone: string;
     total: number;
     status: string;
     paymentStatus: string;
@@ -54,6 +55,9 @@ export function OrdersTable({ orders }: OrdersTableProps) {
                             </th>
                             <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">
                                 Customer
+                            </th>
+                            <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">
+                                Mobile
                             </th>
                             <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">
                                 Items
@@ -102,6 +106,9 @@ export function OrdersTable({ orders }: OrdersTableProps) {
                                     </div>
                                 </td>
                                 <td className="py-3 px-4 text-sm text-gray-700">
+                                    {order.customerPhone || "N/A"}
+                                </td>
+                                <td className="py-3 px-4 text-sm text-gray-700">
                                     {order.items.length} item
                                     {order.items.length !== 1 ? "s" : ""}
                                 </td>
@@ -118,7 +125,7 @@ export function OrdersTable({ orders }: OrdersTableProps) {
                                     />
                                 </td>
                                 <td className="py-3 px-4 text-sm text-gray-500">
-                                    {format(new Date(order.createdAt), "MMM dd, yyyy")}
+                                    {format(new Date(order.createdAt), "dd/MM/yyyy HH:mm")}
                                 </td>
                                 <td className="py-3 px-4">
                                     <div className="flex items-center justify-end">

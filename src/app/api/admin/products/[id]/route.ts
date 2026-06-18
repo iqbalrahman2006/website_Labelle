@@ -69,37 +69,93 @@ export async function PATCH(
             name: z.string().min(3).optional(),
             slug: z.string().min(3).optional(),
             description: z.string().min(10).optional(),
-            shortDesc: z.string().optional(),
+            shortDesc: z.string().optional().nullable(),
             categoryId: z.string().optional(),
             price: z.number().min(0).optional(),
-            compareAtPrice: z.number().optional(),
-            costPrice: z.number().optional(),
+            compareAtPrice: z.number().optional().nullable(),
+            costPrice: z.number().optional().nullable(),
             inventory: z.number().int().min(0).optional(),
             status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED", "OUT_OF_STOCK"]).optional(),
             isFeatured: z.boolean().optional(),
             isNewArrival: z.boolean().optional(),
             isBestseller: z.boolean().optional(),
-            fabric: z.string().optional(),
-            care: z.string().optional(),
+            fabric: z.string().optional().nullable(),
+            care: z.string().optional().nullable(),
             occasion: z.array(z.string()).optional(),
-            pattern: z.string().optional(),
-            sleeveType: z.string().optional(),
-            metaTitle: z.string().optional(),
-            metaDesc: z.string().optional(),
+            pattern: z.string().optional().nullable(),
+            sleeveType: z.string().optional().nullable(),
+            metaTitle: z.string().optional().nullable(),
+            metaDesc: z.string().optional().nullable(),
+            images: z.array(z.string()).optional(),
+            variants: z.array(z.object({
+                size: z.string(),
+                color: z.string(),
+                stock: z.number(),
+                priceAdjustment: z.number(),
+            })).optional(),
         });
 
         const validatedData = updateSchema.parse(body);
 
-        const product = await prisma.product.update({
-            where: { id: params.id },
-            data: validatedData,
-            include: {
-                category: true,
-                images: true,
-            },
+        // Separate images and variants from validated data
+        const { images, variants, ...productUpdateData } = validatedData;
+
+        const updatedProduct = await prisma.$transaction(async (tx) => {
+            // Update basic product details
+            const product = await tx.product.update({
+                where: { id: params.id },
+                data: productUpdateData,
+            });
+
+            // Update images if provided
+            if (images) {
+                await tx.productImage.deleteMany({
+                    where: { productId: params.id },
+                });
+
+                await tx.productImage.createMany({
+                    data: images.map((url, index) => ({
+                        productId: params.id,
+                        url,
+                        alt: product.name,
+                        position: index,
+                    })),
+                });
+            }
+
+            // Update variants if provided
+            if (variants) {
+                await tx.productVariant.deleteMany({
+                    where: { productId: params.id },
+                });
+
+                await tx.productVariant.createMany({
+                    data: variants.map((v, index) => {
+                        const variantSku = `LBL-${product.slug.toUpperCase()}-${v.size.toUpperCase()}-${v.color.toUpperCase().replace(/\s+/g, "")}-${index}-${Math.floor(Math.random() * 1000)}`;
+                        return {
+                            productId: params.id,
+                            sku: variantSku,
+                            size: v.size,
+                            color: v.color,
+                            inventory: v.stock,
+                            priceAdjustment: v.priceAdjustment,
+                            isActive: true,
+                        };
+                    }),
+                });
+            }
+
+            return tx.product.findUnique({
+                where: { id: params.id },
+                include: {
+                    category: true,
+                    images: { orderBy: { position: "asc" } },
+                    variants: true,
+                },
+            });
         });
 
-        return NextResponse.json(product);
+        return NextResponse.json(updatedProduct);
     } catch (error) {
         if (error instanceof z.ZodError) {
             return NextResponse.json(

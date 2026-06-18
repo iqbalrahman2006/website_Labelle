@@ -75,13 +75,25 @@ export async function DELETE(req: Request) {
             return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
         }
 
-        const { id } = await req.json();
+        let id: string | undefined;
+        try {
+            const body = await req.json();
+            id = body?.id;
+        } catch (e) {
+            // Body is empty or malformed, meaning we want to clear the entire cart
+        }
 
-        await prisma.cartItem.delete({
-            where: { id },
-        });
-
-        return NextResponse.json({ message: "Item removed" });
+        if (id) {
+            await prisma.cartItem.delete({
+                where: { id },
+            });
+            return NextResponse.json({ message: "Item removed" });
+        } else {
+            await prisma.cartItem.deleteMany({
+                where: { userId: session.user.id },
+            });
+            return NextResponse.json({ message: "Cart cleared" });
+        }
     } catch (error) {
         console.error("CART_DELETE_ERROR", error);
         return NextResponse.json({ message: "Internal server error" }, { status: 500 });

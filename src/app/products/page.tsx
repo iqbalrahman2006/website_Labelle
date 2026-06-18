@@ -46,6 +46,11 @@ function ProductsContent() {
         // @ts-ignore
         search: filters.search,
         sortBy,
+        sizes: filters.sizes,
+        colors: filters.colors,
+        occasions: filters.occasions,
+        minPrice: filters.minPrice,
+        maxPrice: filters.maxPrice,
     });
 
     // Determine Title based on active category

@@ -13,6 +13,14 @@ export async function GET(req: Request) {
         const bestseller = searchParams.get("isBestseller");
         const search = searchParams.get("search");
 
+        // Advanced filters
+        const sizes = searchParams.getAll("sizes");
+        const colors = searchParams.getAll("colors");
+        const occasions = searchParams.getAll("occasions");
+        const minPriceStr = searchParams.get("minPrice");
+        const maxPriceStr = searchParams.get("maxPrice");
+        const sortBy = searchParams.get("sortBy") || "newest";
+
         const where: any = {};
         if (category) {
             where.category = {
@@ -32,6 +40,47 @@ export async function GET(req: Request) {
             ];
         }
 
+        // Price boundaries filter
+        if (minPriceStr || maxPriceStr) {
+            const priceFilter: any = {};
+            if (minPriceStr) priceFilter.gte = parseFloat(minPriceStr);
+            if (maxPriceStr) priceFilter.lte = parseFloat(maxPriceStr);
+            where.price = priceFilter;
+        }
+
+        // Variant filters
+        if (sizes.length > 0 || colors.length > 0) {
+            const variantFilter: any = { isActive: true };
+            if (sizes.length > 0) {
+                variantFilter.size = { in: sizes };
+            }
+            if (colors.length > 0) {
+                variantFilter.color = { in: colors, mode: "insensitive" };
+            }
+            where.variants = {
+                some: variantFilter
+            };
+        }
+
+        // Occasions list filter
+        if (occasions.length > 0) {
+            where.occasion = {
+                hasSome: occasions
+            };
+        }
+
+        // Sorting query builder
+        let orderBy: any = { createdAt: "desc" };
+        if (sortBy === "price-asc") {
+            orderBy = { price: "asc" };
+        } else if (sortBy === "price-desc") {
+            orderBy = { price: "desc" };
+        } else if (sortBy === "rating") {
+            orderBy = { averageRating: "desc" };
+        } else if (sortBy === "popularity") {
+            orderBy = { reviewCount: "desc" };
+        }
+
         const total = await prisma.product.count({ where });
 
         const products = await prisma.product.findMany({
@@ -41,9 +90,7 @@ export async function GET(req: Request) {
                 category: true,
                 variants: true,
             },
-            orderBy: {
-                createdAt: "desc",
-            },
+            orderBy,
         });
 
         return NextResponse.json({

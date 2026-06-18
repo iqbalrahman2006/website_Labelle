@@ -23,8 +23,7 @@ export default function CheckoutPage() {
     const [paymentMethod, setPaymentMethod] = useState<'razorpay' | 'cod'>('razorpay');
     const [isProcessing, setIsProcessing] = useState(false);
 
-    // Mock addresses - TODO: Fetch from API
-    const [addresses] = useState<Address[]>([]);
+    const [addresses, setAddresses] = useState<Address[]>([]);
 
     useEffect(() => {
         // Redirect if not authenticated
@@ -37,6 +36,36 @@ export default function CheckoutPage() {
             router.push('/cart');
         }
     }, [status, items.length, router]);
+
+    useEffect(() => {
+        // Fetch addresses from API
+        async function fetchAddresses() {
+            try {
+                const res = await fetch("/api/addresses");
+                if (res.ok) {
+                    const data = await res.json();
+                    setAddresses(data);
+                    // Pre-select default address or first address
+                    const defaultAddress = data.find((a: Address) => a.isDefault);
+                    if (defaultAddress) {
+                        setSelectedAddress(defaultAddress);
+                    } else if (data.length > 0) {
+                        setSelectedAddress(data[0]);
+                    }
+                }
+            } catch (err) {
+                console.error("Error fetching addresses:", err);
+            }
+        }
+        if (status === 'authenticated') {
+            fetchAddresses();
+        }
+    }, [status]);
+
+    const handleAddressAdded = (newAddress: Address) => {
+        setAddresses((prev) => [...prev, newAddress]);
+        setSelectedAddress(newAddress);
+    };
 
     if (status === 'loading' || items.length === 0) {
         return (
@@ -202,6 +231,7 @@ export default function CheckoutPage() {
                                 onAddressSelect={setSelectedAddress}
                                 onDeliveryMethodChange={setDeliveryMethod}
                                 onContinue={handleContinueToPayment}
+                                onAddressAdded={handleAddressAdded}
                             />
                         )}
 

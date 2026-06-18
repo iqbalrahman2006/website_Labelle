@@ -11,6 +11,7 @@ import { AddressForm } from "@/components/account/AddressForm";
 import { Address } from "@/types/checkout.types";
 import { cn } from "@/lib/utils";
 import { estimateDeliveryDate } from "@/lib/utils/order-utils";
+import { toast } from "sonner";
 
 interface ShippingStepProps {
     addresses: Address[];
@@ -19,6 +20,7 @@ interface ShippingStepProps {
     onAddressSelect: (address: Address) => void;
     onDeliveryMethodChange: (method: 'standard' | 'express') => void;
     onContinue: () => void;
+    onAddressAdded: (address: Address) => void;
 }
 
 export function ShippingStep({
@@ -28,18 +30,34 @@ export function ShippingStep({
     onAddressSelect,
     onDeliveryMethodChange,
     onContinue,
+    onAddressAdded,
 }: ShippingStepProps) {
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
     const handleAddAddress = async (data: any) => {
-        // TODO: Implement add address API call
-        console.log('Add address:', data);
+        try {
+            const res = await fetch("/api/addresses", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data),
+            });
+            if (res.ok) {
+                const newAddress = await res.json();
+                onAddressAdded(newAddress);
+                toast.success("Address added successfully");
+            } else {
+                const err = await res.json();
+                toast.error(err.message || "Failed to add address");
+            }
+        } catch (error) {
+            console.error("Error adding address:", error);
+            toast.error("Failed to add address");
+        }
         setIsAddDialogOpen(false);
     };
 
     return (
-        <div className="grid lg:grid-cols-[1fr_400px] gap-8">
-            <div className="space-y-8">
+        <div className="space-y-8">
                 {/* Shipping Address */}
                 <div>
                     <h2 className="text-2xl font-semibold mb-4">Shipping Address</h2>
@@ -203,19 +221,6 @@ export function ShippingStep({
                 >
                     Continue to Payment
                 </Button>
-            </div>
-
-            {/* Order Summary Sidebar - Placeholder */}
-            <div className="lg:sticky lg:top-24 lg:self-start">
-                <Card>
-                    <CardContent className="p-6">
-                        <h3 className="font-semibold mb-4">Order Summary</h3>
-                        <p className="text-sm text-muted-foreground">
-                            Summary will be displayed here
-                        </p>
-                    </CardContent>
-                </Card>
-            </div>
         </div>
     );
 }

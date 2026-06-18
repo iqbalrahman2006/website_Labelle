@@ -314,6 +314,34 @@ export default async function OrderDetailPage({
                                     </p>
                                 </div>
                             )}
+                            <div>
+                                <p className="text-sm font-medium text-gray-700">
+                                    Payment Status
+                                </p>
+                                <div className="mt-1">
+                                    <StatusBadge status={order.paymentStatus} />
+                                </div>
+                            </div>
+                            {order.razorpayOrderId && (
+                                <div>
+                                    <p className="text-sm font-medium text-gray-700">
+                                        Razorpay Order ID
+                                    </p>
+                                    <p className="text-sm text-gray-900 font-mono">
+                                        {order.razorpayOrderId}
+                                    </p>
+                                </div>
+                            )}
+                            {order.razorpayPaymentId && (
+                                <div>
+                                    <p className="text-sm font-medium text-gray-700">
+                                        Payment ID
+                                    </p>
+                                    <p className="text-sm text-gray-900 font-mono">
+                                        {order.razorpayPaymentId}
+                                    </p>
+                                </div>
+                            )}
                             {order.transactionId && (
                                 <div>
                                     <p className="text-sm font-medium text-gray-700">
@@ -321,16 +349,6 @@ export default async function OrderDetailPage({
                                     </p>
                                     <p className="text-sm text-gray-900 font-mono">
                                         {order.transactionId}
-                                    </p>
-                                </div>
-                            )}
-                            {order.razorpayPaymentId && (
-                                <div>
-                                    <p className="text-sm font-medium text-gray-700">
-                                        Razorpay Payment ID
-                                    </p>
-                                    <p className="text-sm text-gray-900 font-mono">
-                                        {order.razorpayPaymentId}
                                     </p>
                                 </div>
                             )}

@@ -38,50 +38,68 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Create order in database
-        const order = await prisma.order.create({
-            data: {
-                orderNumber: orderData.orderNumber,
-                userId: session.user.id,
-                status: 'CONFIRMED',
-                paymentStatus: 'PAID',
-                paymentMethod: 'RAZORPAY',
-                razorpayOrderId: razorpay_order_id,
-                razorpayPaymentId: razorpay_payment_id,
-                razorpaySignature: razorpay_signature,
-                subtotal: orderData.subtotal,
-                shipping: orderData.shipping,
-                tax: orderData.tax,
-                discount: orderData.discount || 0,
-                total: orderData.total,
-                customerName: orderData.customerName,
-                customerEmail: orderData.customerEmail,
-                customerPhone: orderData.customerPhone,
-                shippingAddress: orderData.shippingAddress,
-                billingAddress: orderData.billingAddress || orderData.shippingAddress,
-                items: {
-                    create: orderData.items.map((item: any) => ({
-                        productId: item.productId,
-                        variantId: item.variantId,
-                        name: item.name,
-                        sku: item.sku,
-                        size: item.size,
-                        color: item.color,
-                        image: item.image,
-                        quantity: item.quantity,
-                        price: item.price,
-                        total: item.total,
-                    })),
+        // Create order, decrement stock, and clear cart in a transaction
+        const order = await prisma.$transaction(async (tx) => {
+            const newOrder = await tx.order.create({
+                data: {
+                    orderNumber: orderData.orderNumber,
+                    userId: session.user.id,
+                    status: 'CONFIRMED',
+                    paymentStatus: 'PAID',
+                    paymentMethod: 'RAZORPAY',
+                    razorpayOrderId: razorpay_order_id,
+                    razorpayPaymentId: razorpay_payment_id,
+                    razorpaySignature: razorpay_signature,
+                    subtotal: orderData.subtotal,
+                    shipping: orderData.shipping,
+                    tax: orderData.tax,
+                    discount: orderData.discount || 0,
+                    total: orderData.total,
+                    customerName: orderData.customerName,
+                    customerEmail: orderData.customerEmail,
+                    customerPhone: orderData.customerPhone,
+                    shippingAddress: orderData.shippingAddress,
+                    billingAddress: orderData.billingAddress || orderData.shippingAddress,
+                    items: {
+                        create: orderData.items.map((item: any) => ({
+                            productId: item.productId,
+                            variantId: item.variantId,
+                            name: item.name,
+                            sku: item.sku,
+                            size: item.size,
+                            color: item.color,
+                            image: item.image,
+                            quantity: item.quantity,
+                            price: item.price,
+                            total: item.total,
+                        })),
+                    },
                 },
-            },
-            include: {
-                items: true,
-            },
-        });
+                include: {
+                    items: true,
+                },
+            });
 
-        // Clear user's cart
-        await prisma.cartItem.deleteMany({
-            where: { userId: session.user.id },
+            // Decrement stock levels for each purchased variant
+            for (const item of orderData.items) {
+                if (item.variantId) {
+                    await tx.productVariant.update({
+                        where: { id: item.variantId },
+                        data: {
+                            inventory: {
+                                decrement: item.quantity,
+                            },
+                        },
+                    });
+                }
+            }
+
+            // Clear user's cart
+            await tx.cartItem.deleteMany({
+                where: { userId: session.user.id },
+            });
+
+            return newOrder;
         });
 
         // Send confirmation email

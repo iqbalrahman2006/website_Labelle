@@ -31,7 +31,7 @@ export function CategoryShowcase() {
     const activeCategories = categories?.filter(c => c.image) || [];
     const displayCategories = activeCategories.length > 0 ? activeCategories : (categories || []);
 
-    if (!displayCategories || displayCategories.length === 0) {
+    if (!displayCategories || displayCategories.length < 3) {
         return null;
     }
 
@@ -49,41 +49,41 @@ export function CategoryShowcase() {
                 </Button>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
                 {displayCategories.map((category) => (
                     <Link
                         key={category.slug}
                         href={`/products?category=${category.slug}`}
-                        className="group relative h-[420px] overflow-hidden rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 border border-secondary/15"
+                        className="group relative aspect-square md:aspect-[4/3] overflow-hidden rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 border border-secondary/15"
                     >
                         {/* Background Image */}
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img 
                             src={category.image || FALLBACK_IMAGE} 
                             alt={category.name} 
-                            className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                            className="absolute inset-0 w-full h-full object-cover transition-transform duration-[250ms] ease-out group-hover:scale-[1.04]"
                             onError={(e) => {
                                 (e.target as HTMLImageElement).src = FALLBACK_IMAGE;
                             }}
                         />
 
                         {/* Dark Radial/Linear Gradient Overlays */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10 transition-opacity duration-300 group-hover:opacity-95" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-black/10 transition-opacity duration-300 group-hover:opacity-95" />
 
                         {/* Gold accent line on hover */}
-                        <div className="absolute top-0 left-0 right-0 h-[3px] bg-amber-500 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
+                        <div className="absolute top-0 left-0 right-0 h-[3px] bg-amber-500 scale-x-0 group-hover:scale-x-100 transition-transform duration-[250ms] origin-left" />
 
                         {/* Content */}
-                        <div className="absolute bottom-0 left-0 right-0 p-6 text-white flex flex-col justify-end h-full">
-                            <h3 className="text-xl sm:text-2xl font-serif font-bold mb-1 tracking-wide text-white group-hover:text-amber-200 transition-colors duration-300">
+                        <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 text-white flex flex-col justify-end h-full">
+                            <h3 className="text-base sm:text-2xl font-serif font-bold mb-1 tracking-wide text-white group-hover:text-amber-200 transition-colors duration-300">
                                 {category.name}
                             </h3>
                             {category.description && (
-                                <p className="text-xs sm:text-sm text-gray-300 line-clamp-2 mb-4">
+                                <p className="text-[10px] sm:text-sm text-gray-300 line-clamp-2 mb-2 sm:mb-4">
                                     {category.description}
                                 </p>
                             )}
-                            <div className="flex items-center gap-2 text-xs font-semibold text-amber-200 uppercase tracking-widest translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+                            <div className="flex items-center gap-2 text-[10px] sm:text-xs font-semibold text-amber-200 uppercase tracking-widest translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-[250ms]">
                                 View Collection <ArrowRight className="h-3.5 w-3.5" />
                             </div>
                         </div>

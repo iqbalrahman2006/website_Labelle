@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, Save, Plus, Trash2, HelpCircle } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +18,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { toast } from "sonner";
 import { slugify } from "@/lib/utils";
 
@@ -50,14 +50,72 @@ const productSchema = z.object({
 
 type ProductFormData = z.infer<typeof productSchema>;
 
+const variantSchema = z.object({
+    size: z.string().min(1, "Size is required"),
+    color: z.string().min(1, "Color is required"),
+    stock: z.number().int().min(0, "Stock must be 0 or greater"),
+    priceAdjustment: z.number().min(0, "Price adjustment must be 0 or greater"),
+});
+
 interface ProductFormProps {
     categories: { id: string; name: string }[];
-    initialData?: Partial<ProductFormData> & { id?: string };
+    initialData?: Partial<ProductFormData> & {
+        id?: string;
+        images?: string[];
+        variants?: { size: string; color: string; stock: number; priceAdjustment: number }[];
+    };
 }
 
 export function ProductForm({ categories, initialData }: ProductFormProps) {
     const router = useRouter();
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Dynamic Images State
+    const [imageUrls, setImageUrls] = useState<string[]>(
+        initialData?.images || [""]
+    );
+
+    // Dynamic Variants State
+    const [variants, setVariants] = useState<z.infer<typeof variantSchema>[]>(
+        initialData?.variants || [
+            { size: "M", color: "Default", stock: 10, priceAdjustment: 0 }
+        ]
+    );
+
+    const handleAddImage = () => {
+        setImageUrls([...imageUrls, ""]);
+    };
+
+    const handleRemoveImage = (index: number) => {
+        const newImages = [...imageUrls];
+        newImages.splice(index, 1);
+        setImageUrls(newImages.length > 0 ? newImages : [""]);
+    };
+
+    const handleImageChange = (index: number, value: string) => {
+        const newImages = [...imageUrls];
+        newImages[index] = value;
+        setImageUrls(newImages);
+    };
+
+    const handleAddVariantRow = () => {
+        setVariants([...variants, { size: "M", color: "", stock: 10, priceAdjustment: 0 }]);
+    };
+
+    const handleRemoveVariantRow = (index: number) => {
+        const newVariants = [...variants];
+        newVariants.splice(index, 1);
+        setVariants(newVariants.length > 0 ? newVariants : [{ size: "M", color: "Default", stock: 10, priceAdjustment: 0 }]);
+    };
+
+    const handleVariantChange = (index: number, field: keyof z.infer<typeof variantSchema>, value: any) => {
+        const newVariants = [...variants];
+        newVariants[index] = {
+            ...newVariants[index],
+            [field]: value
+        };
+        setVariants(newVariants);
+    };
 
     const {
         register,
@@ -91,6 +149,20 @@ export function ProductForm({ categories, initialData }: ProductFormProps) {
     };
 
     const onSubmit = async (data: ProductFormData) => {
+        // Validation check for variants
+        const validVariants = variants.filter(v => v.size && v.color);
+        if (validVariants.length === 0) {
+            toast.error("Please add at least one valid variant with Size and Color.");
+            return;
+        }
+
+        // Filter out empty image URLs
+        const validImages = imageUrls.filter(url => url.trim() !== "");
+        if (validImages.length === 0) {
+            toast.error("Please add at least one product image URL.");
+            return;
+        }
+
         setIsSubmitting(true);
         try {
             // Convert occasion string to array
@@ -101,6 +173,13 @@ export function ProductForm({ categories, initialData }: ProductFormProps) {
             const payload = {
                 ...data,
                 occasion: occasionArray,
+                images: validImages,
+                variants: validVariants.map(v => ({
+                    size: v.size,
+                    color: v.color,
+                    stock: Number(v.stock),
+                    priceAdjustment: Number(v.priceAdjustment)
+                }))
             };
 
             const url = initialData?.id
@@ -116,7 +195,8 @@ export function ProductForm({ categories, initialData }: ProductFormProps) {
             });
 
             if (!response.ok) {
-                throw new Error("Failed to save product");
+                const err = await response.json();
+                throw new Error(err.message || "Failed to save product");
             }
 
             toast.success(
@@ -126,9 +206,9 @@ export function ProductForm({ categories, initialData }: ProductFormProps) {
             );
             router.push("/admin/products");
             router.refresh();
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error saving product:", error);
-            toast.error("Failed to save product");
+            toast.error(error.message || "Failed to save product");
         } finally {
             setIsSubmitting(false);
         }
@@ -364,6 +444,152 @@ export function ProductForm({ categories, initialData }: ProductFormProps) {
                                     rows={3}
                                     placeholder="SEO description"
                                 />
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Product Gallery Section */}
+                    <Card className="glass-card shadow-sm">
+                        <CardHeader className="flex flex-row items-center justify-between">
+                            <div>
+                                <CardTitle className="text-xl font-serif text-primary">Product Gallery</CardTitle>
+                                <CardDescription>Provide public image URLs for this product.</CardDescription>
+                            </div>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={handleAddImage}
+                                className="border-primary/40 text-primary hover:bg-primary/5"
+                            >
+                                <Plus className="h-4 w-4 mr-1" /> Add Image
+                            </Button>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            {imageUrls.map((url, index) => (
+                                <div key={index} className="flex gap-2 items-center">
+                                    <span className="text-xs font-semibold text-muted-foreground w-6 font-mono">#{index + 1}</span>
+                                    <Input
+                                        value={url}
+                                        onChange={(e) => handleImageChange(index, e.target.value)}
+                                        placeholder="https://images.unsplash.com/photo-... or other CDN image link"
+                                        className="flex-1"
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() => handleRemoveImage(index)}
+                                        className="text-destructive hover:bg-destructive/10"
+                                        disabled={imageUrls.length === 1}
+                                    >
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            ))}
+                        </CardContent>
+                    </Card>
+
+                    {/* Inventory & Size Variants Section */}
+                    <Card className="glass-card shadow-sm">
+                        <CardHeader className="flex flex-row items-center justify-between">
+                            <div>
+                                <CardTitle className="text-xl font-serif text-primary">Inventory & Size Variants</CardTitle>
+                                <CardDescription>Define size, color, inventory levels, and custom price adjustments.</CardDescription>
+                            </div>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={handleAddVariantRow}
+                                className="border-primary/40 text-primary hover:bg-primary/5"
+                            >
+                                <Plus className="h-4 w-4 mr-1" /> Add Variant
+                            </Button>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-sm text-left">
+                                    <thead>
+                                        <tr className="border-b border-border/80 pb-2 text-muted-foreground font-semibold">
+                                            <th className="py-2 pr-2">Size *</th>
+                                            <th className="py-2 px-2">Color *</th>
+                                            <th className="py-2 px-2">Stock (Inventory) *</th>
+                                            <th className="py-2 px-2">Price Adjustment (₹)</th>
+                                            <th className="py-2 pl-2 text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-border/40">
+                                        {variants.map((v, index) => (
+                                            <tr key={index} className="hover:bg-muted/10">
+                                                <td className="py-3 pr-2 w-[140px]">
+                                                    <Select
+                                                        defaultValue={v.size}
+                                                        onValueChange={(val) => handleVariantChange(index, "size", val)}
+                                                    >
+                                                        <SelectTrigger className="h-9">
+                                                            <SelectValue />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="S">S</SelectItem>
+                                                            <SelectItem value="M">M</SelectItem>
+                                                            <SelectItem value="L">L</SelectItem>
+                                                            <SelectItem value="XL">XL</SelectItem>
+                                                            <SelectItem value="XXL">XXL</SelectItem>
+                                                            <SelectItem value="XXXL">XXXL</SelectItem>
+                                                            <SelectItem value="2-3Y">2-3 Years (Kids)</SelectItem>
+                                                            <SelectItem value="4-5Y">4-5 Years (Kids)</SelectItem>
+                                                            <SelectItem value="6-7Y">6-7 Years (Kids)</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                </td>
+                                                <td className="py-3 px-2">
+                                                    <Input
+                                                        value={v.color}
+                                                        onChange={(e) => handleVariantChange(index, "color", e.target.value)}
+                                                        placeholder="e.g. Maroon"
+                                                        className="h-9"
+                                                    />
+                                                </td>
+                                                <td className="py-3 px-2 w-[110px]">
+                                                    <Input
+                                                        type="number"
+                                                        value={v.stock}
+                                                        onChange={(e) => handleVariantChange(index, "stock", parseInt(e.target.value) || 0)}
+                                                        placeholder="10"
+                                                        min="0"
+                                                        className="h-9"
+                                                    />
+                                                </td>
+                                                <td className="py-3 px-2 w-[140px]">
+                                                    <div className="relative">
+                                                        <span className="absolute left-2 top-2 text-muted-foreground text-xs">₹</span>
+                                                        <Input
+                                                            type="number"
+                                                            value={v.priceAdjustment}
+                                                            onChange={(e) => handleVariantChange(index, "priceAdjustment", parseFloat(e.target.value) || 0)}
+                                                            placeholder="0"
+                                                            min="0"
+                                                            className="h-9 pl-6"
+                                                        />
+                                                    </div>
+                                                </td>
+                                                <td className="py-3 pl-2 text-right w-[60px]">
+                                                    <Button
+                                                        type="button"
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        onClick={() => handleRemoveVariantRow(index)}
+                                                        className="text-destructive hover:bg-destructive/10"
+                                                        disabled={variants.length === 1}
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
                             </div>
                         </CardContent>
                     </Card>

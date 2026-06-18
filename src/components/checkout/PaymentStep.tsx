@@ -34,8 +34,7 @@ export function PaymentStep({
     const [couponCode, setCouponCode] = useState("");
 
     return (
-        <div className="grid lg:grid-cols-[1fr_400px] gap-8">
-            <div className="space-y-8">
+        <div className="space-y-8">
                 {/* Payment Method */}
                 <div>
                     <h2 className="text-2xl font-semibold mb-4">Payment Method</h2>
@@ -197,19 +196,6 @@ export function PaymentStep({
                 <div className="text-center text-sm text-muted-foreground">
                     <p>🔒 Your payment information is secure and encrypted</p>
                 </div>
-            </div>
-
-            {/* Order Summary Sidebar - Placeholder */}
-            <div className="lg:sticky lg:top-24 lg:self-start">
-                <Card>
-                    <CardContent className="p-6">
-                        <h3 className="font-semibold mb-4">Order Summary</h3>
-                        <p className="text-sm text-muted-foreground">
-                            Summary will be displayed here
-                        </p>
-                    </CardContent>
-                </Card>
-            </div>
         </div>
     );
 }

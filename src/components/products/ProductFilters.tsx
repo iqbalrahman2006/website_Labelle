@@ -22,7 +22,7 @@ export interface ProductFilterValues {
 interface ProductFiltersProps {
     filters: ProductFilterValues;
     onFilterChange: (filters: ProductFilterValues) => void;
-    categories?: Array<{ id: string; name: string }>;
+    categories?: Array<{ id: string; name: string; slug: string }>;
 }
 
 const SIZES = ["XS", "S", "M", "L", "XL", "XXL", "3XL"];
@@ -49,9 +49,17 @@ export function ProductFilters({ filters, onFilterChange, categories = [] }: Pro
     const [isOpen, setIsOpen] = useState(false);
 
     const handleCategoryToggle = (categoryId: string) => {
+        const catObj = categories.find((c) => c.id === categoryId);
         const current = filters.categories || [];
-        const updated = current.includes(categoryId)
-            ? current.filter((id) => id !== categoryId)
+        const hasCategory = current.some(
+            (val) => val === categoryId || (catObj?.slug && val === catObj.slug)
+        );
+        const updated = hasCategory
+            ? current.filter(
+                  (val) =>
+                      val !== categoryId &&
+                      (catObj?.slug ? val !== catObj.slug : true)
+              )
             : [...current, categoryId];
         onFilterChange({ ...filters, categories: updated });
     };
@@ -108,13 +116,13 @@ export function ProductFilters({ filters, onFilterChange, categories = [] }: Pro
                     </div>
                     <div className="flex flex-wrap gap-2">
                         {filters.categories?.map((catId) => {
-                            const cat = categories.find((c) => c.id === catId);
+                            const cat = categories.find((c) => c.id === catId || c.slug === catId);
                             return cat ? (
                                 <Badge key={catId} variant="secondary">
                                     {cat.name}
                                     <X
                                         className="ml-1 h-3 w-3 cursor-pointer"
-                                        onClick={() => handleCategoryToggle(catId)}
+                                        onClick={() => handleCategoryToggle(cat.id)}
                                     />
                                 </Badge>
                             ) : null;
@@ -160,7 +168,10 @@ export function ProductFilters({ filters, onFilterChange, categories = [] }: Pro
                             <div key={category.id} className="flex items-center space-x-2">
                                 <Checkbox
                                     id={`cat-${category.id}`}
-                                    checked={filters.categories?.includes(category.id)}
+                                    checked={
+                                        filters.categories?.includes(category.id) ||
+                                        filters.categories?.includes(category.slug)
+                                    }
                                     onCheckedChange={() => handleCategoryToggle(category.id)}
                                 />
                                 <label

@@ -9,6 +9,7 @@ async function getProduct(id: string) {
             include: {
                 category: { select: { id: true, name: true } },
                 images: { orderBy: { position: "asc" } },
+                variants: true,
             },
         });
         return product;
@@ -60,6 +61,13 @@ export default async function EditProductPage({
         sleeveType: product.sleeveType || undefined,
         metaTitle: product.metaTitle || undefined,
         metaDesc: product.metaDesc || undefined,
+        images: product.images.map((img) => img.url),
+        variants: product.variants.map((v) => ({
+            size: v.size || "",
+            color: v.color || "",
+            stock: v.inventory || 0,
+            priceAdjustment: v.priceAdjustment || 0,
+        })),
     };
 
     return <ProductForm categories={categories} initialData={initialData} />;

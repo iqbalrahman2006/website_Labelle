@@ -1,49 +1,60 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { Search, Filter } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
 import { OrdersTable } from "@/components/admin/OrdersTable";
+import { OrdersFilter } from "@/components/admin/OrdersFilter";
 
 interface SearchParams {
     search?: string;
     status?: string;
     paymentStatus?: string;
+    startDate?: string;
+    endDate?: string;
 }
 
 async function getOrders(searchParams: SearchParams) {
     try {
+        const where: any = {};
+
+        if (searchParams.status && searchParams.status !== "all") {
+            where.status = searchParams.status as any;
+        }
+
+        if (searchParams.paymentStatus && searchParams.paymentStatus !== "all") {
+            where.paymentStatus = searchParams.paymentStatus as any;
+        }
+
+        if (searchParams.search) {
+            where.OR = [
+                {
+                    orderNumber: {
+                        contains: searchParams.search,
+                        mode: "insensitive",
+                    },
+                },
+                {
+                    customerName: {
+                        contains: searchParams.search,
+                        mode: "insensitive",
+                    },
+                },
+            ];
+        }
+
+        if (searchParams.startDate || searchParams.endDate) {
+            const dateFilter: any = {};
+            if (searchParams.startDate) {
+                dateFilter.gte = new Date(searchParams.startDate);
+            }
+            if (searchParams.endDate) {
+                const end = new Date(searchParams.endDate);
+                end.setHours(23, 59, 59, 999);
+                dateFilter.lte = end;
+            }
+            where.createdAt = dateFilter;
+        }
+
         const orders = await prisma.order.findMany({
-            where: {
-                ...(searchParams.status && {
-                    status: searchParams.status as any,
-                }),
-                ...(searchParams.paymentStatus && {
-                    paymentStatus: searchParams.paymentStatus as any,
-                }),
-                ...(searchParams.search && {
-                    OR: [
-                        {
-                            orderNumber: {
-                                contains: searchParams.search,
-                                mode: "insensitive",
-                            },
-                        },
-                        {
-                            customerName: {
-                                contains: searchParams.search,
-                                mode: "insensitive",
-                            },
-                        },
-                    ],
-                }),
-            },
+            where,
             include: {
                 user: { select: { name: true, email: true } },
                 items: {
@@ -80,42 +91,7 @@ export default async function OrdersPage({
             </div>
 
             {/* Filters */}
-            <div className="flex gap-4">
-                <div className="flex-1 relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <Input
-                        placeholder="Search by order number or customer name..."
-                        className="pl-10"
-                        defaultValue={searchParams.search}
-                        name="search"
-                    />
-                </div>
-                <Select defaultValue={searchParams.status || "all"}>
-                    <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="Order Status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="all">All Orders</SelectItem>
-                        <SelectItem value="PENDING">Pending</SelectItem>
-                        <SelectItem value="CONFIRMED">Confirmed</SelectItem>
-                        <SelectItem value="PROCESSING">Processing</SelectItem>
-                        <SelectItem value="SHIPPED">Shipped</SelectItem>
-                        <SelectItem value="DELIVERED">Delivered</SelectItem>
-                        <SelectItem value="CANCELLED">Cancelled</SelectItem>
-                    </SelectContent>
-                </Select>
-                <Select defaultValue={searchParams.paymentStatus || "all"}>
-                    <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="Payment Status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="all">All Payments</SelectItem>
-                        <SelectItem value="PENDING">Pending</SelectItem>
-                        <SelectItem value="PAID">Paid</SelectItem>
-                        <SelectItem value="FAILED">Failed</SelectItem>
-                    </SelectContent>
-                </Select>
-            </div>
+            <OrdersFilter />
 
             {/* Orders Table */}
             <OrdersTable orders={orders} />
