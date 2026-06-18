@@ -5,9 +5,12 @@ import { ShoppingCart, User, Search, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
+import { useCart } from "@/hooks/useCart";
 
 export function Navbar() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const { itemCount } = useCart();
+    const count = itemCount();
 
     return (
         <nav className="sticky top-0 z-50 w-full border-b border-secondary/20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 shadow-sm">
@@ -53,6 +56,11 @@ export function Navbar() {
                         <Button variant="ghost" size="icon" asChild className="relative hover:text-primary">
                             <Link href="/cart">
                                 <ShoppingCart className="h-5 w-5" />
+                                {count > 0 && (
+                                    <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground animate-in zoom-in duration-300">
+                                        {count}
+                                    </span>
+                                )}
                             </Link>
                         </Button>
                         <Button variant="ghost" size="icon" className="md:hidden hover:text-primary" onClick={() => setIsMenuOpen(!isMenuOpen)}>
