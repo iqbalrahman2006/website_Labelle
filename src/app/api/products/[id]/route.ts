@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
@@ -9,8 +11,13 @@ export async function GET(
     try {
         const { id } = params;
 
-        const product = await prisma.product.findUnique({
-            where: { id },
+        const product = await prisma.product.findFirst({
+            where: {
+                OR: [
+                    { id },
+                    { slug: id }
+                ]
+            },
             include: {
                 images: true,
                 category: true,

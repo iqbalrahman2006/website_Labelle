@@ -11,6 +11,7 @@ import { StatusBadge } from "./StatusBadge";
 interface Product {
     id: string;
     name: string;
+    slug: string;
     sku: string;
     price: number;
     inventory: number;
@@ -138,7 +139,7 @@ export function ProductsTable({ products }: ProductsTableProps) {
                                 <td className="py-3 px-4">
                                     <div className="flex items-center justify-end gap-2">
                                         <Link
-                                            href={`/products/${product.id}`}
+                                            href={`/products/${product.slug}`}
                                             target="_blank"
                                         >
                                             <Button

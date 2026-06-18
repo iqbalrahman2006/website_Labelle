@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
@@ -64,7 +66,7 @@ export async function POST(req: Request) {
     try {
         const session = await auth();
         // ADMIN only authorization check
-        if (!session || session.user?.role !== "ADMIN") {
+        if (!session || (session.user?.role !== "ADMIN" && session.user?.role !== "SUPER_ADMIN")) {
             return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
         }
 

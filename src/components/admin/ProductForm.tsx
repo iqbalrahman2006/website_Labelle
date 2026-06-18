@@ -30,8 +30,8 @@ const productSchema = z.object({
     shortDesc: z.string().optional(),
     categoryId: z.string().min(1, "Category is required"),
     price: z.number().min(0, "Price must be positive"),
-    compareAtPrice: z.number().optional(),
-    costPrice: z.number().optional(),
+    compareAtPrice: z.number().nullable().optional(),
+    costPrice: z.number().nullable().optional(),
     inventory: z.number().int().min(0, "Inventory must be positive"),
     lowStockThreshold: z.number().int(),
     trackInventory: z.boolean(),
@@ -258,7 +258,11 @@ export function ProductForm({ categories, initialData }: ProductFormProps) {
                                         id="compareAtPrice"
                                         type="number"
                                         step="0.01"
-                                        {...register("compareAtPrice", { valueAsNumber: true })}
+                                        defaultValue={initialData?.compareAtPrice || ""}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            setValue("compareAtPrice", val ? parseFloat(val) : null);
+                                        }}
                                         placeholder="0.00"
                                     />
                                 </div>
@@ -268,7 +272,11 @@ export function ProductForm({ categories, initialData }: ProductFormProps) {
                                         id="costPrice"
                                         type="number"
                                         step="0.01"
-                                        {...register("costPrice", { valueAsNumber: true })}
+                                        defaultValue={initialData?.costPrice || ""}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            setValue("costPrice", val ? parseFloat(val) : null);
+                                        }}
                                         placeholder="0.00"
                                     />
                                 </div>
